@@ -14,10 +14,10 @@ if platform.system() == 'Windows':
     requirements += ['PySoundFile']
 
 setup(
-    name="wenet-encapsulation",
+    name="wenet_encapsulation",
     install_requires=requirements,
     packages=find_packages(),
     entry_points={"console_scripts": [
-        "wenet-encapsulation=model:load_model",
+        "wenet_encapsulation=model:load_model",
     ]},
 )
