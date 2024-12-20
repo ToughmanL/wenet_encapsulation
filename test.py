@@ -9,11 +9,11 @@ Contact		:xk.liu@siat.ac.cn
 License		:GPL
 '''
 
-import wenet_model
+import wenet_encapsulation
 
 
 model_dir = "conformer_179"
-model_object = wenet_model.load_model(model_dir, gpu=0, beam=10)
+model_object = wenet_encapsulation.load_model(model_dir, gpu=0, beam=10)
 audio_file = "test.wav"
 result = model_object.transcribe(audio_file)
 print(result)
