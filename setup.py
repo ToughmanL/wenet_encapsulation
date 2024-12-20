@@ -18,6 +18,6 @@ setup(
     install_requires=requirements,
     packages=find_packages(),
     entry_points={"console_scripts": [
-        "wenet_encapsulation=model:load_model",
+        "wenet_encapsulation=wenet_model:load_model",
     ]},
 )

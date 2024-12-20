@@ -1,0 +1,2 @@
+[console_scripts]
+wenet_encapsulation = model:load_model

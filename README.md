@@ -7,6 +7,6 @@ Based on Wenet-3.1.
   3. There are fewer callable functions and they are not very flexible.
   4. You need to convert the model to JIT mode before you can perform inference.
 
-pip install git+https://github.com/ToughmanL/wenet-encapsulation.git
+pip install git+https://github.com/ToughmanL/wenet_encapsulation.git
 
 
