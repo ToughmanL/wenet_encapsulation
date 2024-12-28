@@ -9,11 +9,11 @@ Contact		:xk.liu@siat.ac.cn
 License		:GPL
 '''
 
-import wenet_encapsulation
-
-
+import wenet_infer
+import torch 
+torch.backends.cudnn.enabled = False
 model_dir = "conformer_179"
-model_object = wenet_encapsulation.load_model(model_dir, gpu=0, beam=10)
+model_object = wenet_infer.load_model(model_dir, gpu=0, beam=10)
 audio_file = "test.wav"
 result = model_object.transcribe(audio_file)
-print(result)
+print(result[0])
