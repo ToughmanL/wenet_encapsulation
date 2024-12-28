@@ -44,7 +44,8 @@ args = Namespace(config='config.ini',
     blank_penalty=0.0,
     result_dir='results/',
     batch_size=16,
-    modes=['ctc_prefix_beam_search', 'attention_rescoring'],
+    # modes=['ctc_prefix_beam_search', 'attention', 'attention_rescoring'],
+    modes=['attention'],
     search_ctc_weight=1.0,
     search_transducer_weight=0.0,
     ctc_weight=0.5,
@@ -176,7 +177,7 @@ class Model:
             blank_penalty=args.blank_penalty,
             length_penalty=args.length_penalty,
             infos=infos)
-        hyps = results['attention_rescoring']
+        hyps = results['attention']
         tokens = hyps[0].tokens
         confidence = hyps[0].confidence
         tokens_confidence = hyps[0].tokens_confidence
