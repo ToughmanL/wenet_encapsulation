@@ -13,31 +13,15 @@
 # limitations under the License.
 
 import os
-
-import torch
-import torchaudio
-import torchaudio.compliance.kaldi as kaldi
-
-# from wenet.cli.hub import Hub
-# from wenet.utils.ctc_utils import (force_align, gen_ctc_peak_time,
-#            gen_timestamps_from_peak)
-# from wenet.utils.file_utils import read_symbol_table
-# from wenet.transformer.search import (attention_rescoring,
-#           ctc_prefix_beam_search, DecodeResult)
-# from wenet.utils.context_graph import ContextGraph
-
-
-
-
-from argparse import Namespace
+import io
+import yaml
 import copy
 import logging
-import os
 
-import io
 import torch
-import yaml
-from torch.utils.data import DataLoader
+import librosa
+import torchaudio
+import torchaudio.compliance.kaldi as kaldi
 
 from wenet.dataset.dataset import Dataset
 from wenet.utils.config import override_config
@@ -45,6 +29,8 @@ from wenet.utils.init_model import init_model
 from wenet.utils.init_tokenizer import init_tokenizer
 from wenet.utils.context_graph import ContextGraph
 from wenet.utils.ctc_utils import get_blank_id
+
+from argparse import Namespace
 
 args = Namespace(config='config.ini',
     test_data='test_data.csv',
@@ -88,25 +74,29 @@ class Model:
         resample_rate: int = 16000):
     config = os.path.join(model_dir, "train.yaml")
     model_path = os.path.join(model_dir, "model.pt")
-    bpe_path = os.path.join(model_dir, "bpe.model")
-    units_path = os.path.join(model_dir, "units.txt")
-    cmvn_path = os.path.join(model_dir, "global_cmvn")
     
     self.resample_rate = resample_rate
     with open(config, 'r') as fin:
         configs = yaml.load(fin, Loader=yaml.FullLoader)
+
+    if configs.get('cmvn') is not None:
+        cmvn_path = os.path.join(model_dir, "global_cmvn")
+        configs['cmvn_conf']['cmvn_file'] = cmvn_path
     
+    if configs['tokenizer'] != 'whisper':
+        bpe_path = os.path.join(model_dir, "bpe.model")
+        units_path = os.path.join(model_dir, "units.txt")
+        configs['tokenizer_conf']['bpe_path'] = bpe_path
+        configs['tokenizer_conf']['symbol_table_path'] = units_path
+
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     use_cuda = gpu >= 0 and torch.cuda.is_available()
     self.device = torch.device('cuda' if use_cuda else 'cpu')
 
-    configs['tokenizer_conf']['bpe_path'] = bpe_path
-    configs['tokenizer_conf']['symbol_table_path'] = units_path
     self.tokenizer = init_tokenizer(configs)
     setattr(args, 'config', config)
     setattr(args, 'checkpoint', model_path)
 
-    configs['cmvn_conf']['cmvn_file'] = cmvn_path
     self.model, configs = init_model(args, configs)
     self.model = self.model.to(self.device)
     self.model.eval()
@@ -119,7 +109,7 @@ class Model:
 
     context_graph = None
     _, self.blank_id = get_blank_id(configs, self.tokenizer.symbol_table)
-    self.feat_type = configs['feats_type']
+    self.feat_type = configs['dataset_conf']['feats_type']
 
   def compute_feats(self, audio_file: str) -> torch.Tensor:
     with open(audio_file, 'rb') as fin:
@@ -129,7 +119,6 @@ class Model:
     if sample_rate != self.resample_rate:
         waveform = torchaudio.transforms.Resample(
         orig_freq=sample_rate, new_freq=self.resample_rate)(waveform)
-    waveform = waveform.to(self.device)
     if self.feat_type == 'fbank':
         waveform = waveform * (1 << 15)
         feats = kaldi.fbank(waveform,
@@ -140,6 +129,7 @@ class Model:
             sample_frequency=self.resample_rate)
         feats = feats.unsqueeze(0)
     elif self.feat_type == 'log_mel_spectrogram':
+        waveform = waveform.squeeze(0)
         n_fft = 400
         hop_length = 160
         num_mel_bins = 128
@@ -156,6 +146,7 @@ class Model:
         log_spec = torch.maximum(log_spec, log_spec.max() - 8.0)
         log_spec = (log_spec + 4.0) / 4.0
         feats = log_spec.transpose(0, 1)
+        feats = feats.unsqueeze(0)
     feats_length = torch.tensor([feats.size(1)], dtype=torch.int32)
     return feats, feats_length
 

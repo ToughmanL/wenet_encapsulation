@@ -1,13 +1,6 @@
-# 排除models文件夹
 models/
-
-# 排除build文件夹
 build/
-
-# 排除dist文件夹
 dist/
-
-# 排除wenet_infer.egg-info文件夹
 wenet_infer.egg-info/
 
 # 排除所有.wav文件
