@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "wenet_infer = py.wenet_model:load_model",
+            "wenet_infer = wenet_infer.wenet_model:load_model",
         ]
     },
 )

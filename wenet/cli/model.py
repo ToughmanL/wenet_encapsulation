@@ -150,7 +150,7 @@ class Model:
         return self._decode(audio_file, True, label)
 
 
-def load_model(language: str = None,
+def loadmodel(language: str = None,
                model_dir: str = None,
                gpu: int = -1,
                beam: int = 5,
@@ -163,7 +163,7 @@ def load_model(language: str = None,
 
 
 if __name__ == '__main__':
-    model = load_model(model_dir="conformer_179", gpu=0, beam=10, )
+    model = loadmodel(model_dir="conformer_179", gpu=0, beam=10, )
     audio_file = "test.wav"
     result = model.transcribe(audio_file)
     print(result)
