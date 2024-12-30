@@ -15,8 +15,6 @@
 import os
 import io
 import yaml
-import copy
-import logging
 
 import torch
 import librosa
@@ -71,7 +69,7 @@ class Model:
   def __init__(self,
         model_dir: str,
         gpu: int = 0,
-        beam: int = 10,
+        beam: int = 5,
         resample_rate: int = 16000):
     config = os.path.join(model_dir, "train.yaml")
     model_path = os.path.join(model_dir, "model.pt")
