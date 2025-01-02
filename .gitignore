@@ -1,6 +1,5 @@
 models/
 build/
-dist/
 wenet_infer.egg-info/
 
 # 排除所有.wav文件
